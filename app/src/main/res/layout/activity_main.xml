@@ -53,4 +53,11 @@
         app:S_thumbNormalRadius="12dp"
         app:S_thumbPressRadius="15dp" />
 
+    <com.nextos.seekbar.VerticalSeekbar
+        android:id="@+id/v_seekbar"
+        android:layout_width="100dp"
+        android:layout_height="200dp"
+        android:background="@color/cardview_light_background"
+        android:layout_marginTop="20dp" />
+
 </LinearLayout>

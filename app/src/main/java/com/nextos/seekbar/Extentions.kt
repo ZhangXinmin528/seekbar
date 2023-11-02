@@ -29,7 +29,7 @@ val Float.spToPx
     )
 
 //dp to px
-val Int.dpTopx
+val Int.dpToPx
     get() = this.toFloat().dpToPx
 
 //dsp to px
