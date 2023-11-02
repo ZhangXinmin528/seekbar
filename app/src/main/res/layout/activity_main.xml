@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="20dp"
+    android:background="@android:color/darker_gray"
+    android:orientation="vertical">
+
+    <com.nextos.seekbar.CenterSeekBar
+        android:id="@+id/seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@color/cardview_dark_background"
+        app:backColor="#FFFFFF"
+        app:backFrameColor="#C9C6C6"
+        app:backFrameSize="1dp"
+        app:backHeight="6dp"
+        app:maxProgress="100"
+        app:minProgress="0"
+        app:progress="0"
+        app:progressColor="#FCB2A7"
+        app:thumbColor="#F96650"
+        app:thumbNormalRadius="12dp"
+        app:thumbPressRadius="15dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="reFlush"
+        android:text="切换模式"
+        tools:ignore="HardcodedText" />
+
+
+    <com.nextos.seekbar.SeekBarView
+        android:id="@+id/seekbar_view"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="30dp"
+        android:background="@color/cardview_dark_background"
+        app:S_backColor="#FFFFFF"
+        app:S_backFrameColor="#C9C6C6"
+        app:S_backFrameSize="1dp"
+        app:S_backHeight="6dp"
+        app:S_maxProgress="100"
+        app:S_minProgress="0"
+        app:S_progress="0"
+        app:S_progressColor="#FCB2A7"
+        app:S_thumbColor="#F96650"
+        app:S_thumbNormalRadius="12dp"
+        app:S_thumbPressRadius="15dp" />
+
+</LinearLayout>
