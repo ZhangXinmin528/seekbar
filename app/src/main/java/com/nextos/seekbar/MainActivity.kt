@@ -10,13 +10,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mSeekBar = findViewById<View>(R.id.seekbar) as CenterSeekBar
+//        mSeekBar = findViewById<View>(R.id.seekbar) as CenterSeekBar
 
         findViewById<SeekBarView>(R.id.seekbar_view).setCenterModeEnable(true)
     }
-
-    fun reFlush(view: View?) {
-        center = !center
-        mSeekBar!!.setCenterModeEnable(center)
-    }
+//
+//    fun reFlush(view: View?) {
+//        center = !center
+//        mSeekBar!!.setCenterModeEnable(center)
+//    }
 }
