@@ -1,5 +1,6 @@
 package com.nextos.seekbar
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -7,9 +8,11 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.Log
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
+import java.math.BigDecimal
 
 /**
  * Created by zhangxinmin on 2023/11/2.
@@ -18,7 +21,9 @@ import android.view.View
 
 class VerticalSeekbar : View {
 
+    private val sTag = "VerticalSeekbar"
     private var context: Context? = null
+    private var touchSlop: Int = 0
 
     private var paint: Paint? = null
 
@@ -52,13 +57,15 @@ class VerticalSeekbar : View {
     private var maxProgress: Float = 10.0f
     private var progress: Float = 0.0f
     private var minProgress: Float = -maxProgress
+    private var offset: Float = 0f
+    private var touchMode: Int = 0
+
+    private var seekbarChangedListener: OnSeekbarChangedListener? = null
 
     constructor(context: Context?) : this(context, null)
     constructor(context: Context?, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
-        attrs,
-        defStyleAttr
+        context, attrs, defStyleAttr
     ) {
         initParams(context, attrs, defStyleAttr)
     }
@@ -66,6 +73,44 @@ class VerticalSeekbar : View {
 
     private fun initParams(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) {
         this.context = context
+        val typedArray =
+            context?.obtainStyledAttributes(attrs, R.styleable.VerticalSeekbar, defStyleAttr, 0)
+        typedArray?.let {
+            labelColor = typedArray.getColor(
+                R.styleable.VerticalSeekbar_labelColor, Color.parseColor("#90000000")
+            )
+            labelSize =
+                typedArray.getDimensionPixelSize(R.styleable.VerticalSeekbar_labelSize, 20)
+                    .toFloat()
+
+            trackColor = typedArray.getColor(
+                R.styleable.VerticalSeekbar_trackColor, Color.parseColor("#6968779B")
+            )
+
+            trackWidth =
+                typedArray.getDimensionPixelSize(R.styleable.VerticalSeekbar_trackWidth, 16)
+                    .toFloat()
+
+            thumbColor = typedArray.getColor(
+                R.styleable.VerticalSeekbar_thumbColor, Color.parseColor("#ffffff")
+            )
+            thumbRadius =
+                typedArray.getDimensionPixelSize(R.styleable.VerticalSeekbar_thumbRadius, 28)
+                    .toFloat()
+
+            indicatorColor = typedArray.getColor(
+                R.styleable.VerticalSeekbar_indicatorColor, Color.parseColor("#ffffff")
+            )
+
+            maxProgress =
+                typedArray.getFloat(R.styleable.VerticalSeekbar_maxProgress, 20f)
+
+            minProgress = -maxProgress
+
+            progress =
+                typedArray.getFloat(R.styleable.VerticalSeekbar_progress, 0f)
+        }
+
         paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL_AND_STROKE
             strokeWidth = trackWidth
@@ -81,11 +126,27 @@ class VerticalSeekbar : View {
         }
 
         trackLength = maxProgress - minProgress
+        offset = trackLength / 200
 
+        touchSlop = context?.let { ViewConfiguration.get(it).scaledTouchSlop } ?: 0
+
+        typedArray?.recycle()
+    }
+
+    fun setOnSeekbarChangedListener(listener: OnSeekbarChangedListener) {
+        this.seekbarChangedListener = listener
     }
 
     fun setProgress(progress: Float) {
         this.progress = progress
+        invalidate()
+    }
+
+    fun setAnimProgress(progress: Float) {
+        val objectAnimator = ObjectAnimator.ofFloat(this, "progress", progress).apply {
+            duration = 1000
+        }
+        objectAnimator.start()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -102,33 +163,84 @@ class VerticalSeekbar : View {
             viewWidth = measureWidth
             centerX = viewWidth / 2.0f
         }
-        Log.d(
-            "VerticalSeekbar",
-            "onMeasure..measureHeight:$measureHeight..measureWidth:$measureWidth"
-        )
         setMeasuredDimension(measureWidth, measureHeight)
     }
 
     override fun onDraw(canvas: Canvas?) {
         canvas?.let {
-//            drawBaseLine(it)
             drawTrackBackground(canvas)
-            drawThumb(canvas)
+
             drawProgress(canvas)
+
+            drawThumb(canvas)
+
+            drawProgressLabel(canvas)
+
         }
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+
+        var x = 0f
+        var y = 0f
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-
+                touchMode = 0
             }
 
             MotionEvent.ACTION_UP -> {
+                y = event.y
+                if (touchMode == 0) {
+                    val calProgress = calculateProgressByPx(y)
+                    progress =
+                        if (calProgress > maxProgress) maxProgress else if (calProgress < minProgress) minProgress else calProgress
+                    postInvalidate()
+                }
+                seekbarChangedListener?.onSeekbarChanged(progress)
+            }
 
+            MotionEvent.ACTION_MOVE -> {
+                val currY = event.y
+                if (currY - y >= touchSlop) {//存在滑动
+                    val calProgress = calculateProgressByPx(currY)
+                    touchMode = 1
+                    progress =
+                        if (calProgress > maxProgress) maxProgress else if (calProgress < minProgress) minProgress else calProgress
+                    postInvalidate()
+                    y = currY
+                }
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                return super.onTouchEvent(event)
             }
         }
-        return super.onTouchEvent(event)
+        return true
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                if (progress > minProgress) {
+                    progress -= offset
+                    postInvalidate()
+                    seekbarChangedListener?.onSeekbarChanged(progress)
+                }
+                return true
+            }
+
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                if (progress < maxProgress) {
+                    progress += offset
+                    postInvalidate()
+                    seekbarChangedListener?.onSeekbarChanged(progress)
+                }
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+
     }
 
     private fun drawThumb(canvas: Canvas) {
@@ -136,8 +248,9 @@ class VerticalSeekbar : View {
             color = thumbColor
             style = Paint.Style.FILL
         }?.let {
+
             val startX = centerX + thumbRadius
-            val startY = centerY - thumbLineHeight / 2.0f
+            val startY = getProgressY() - thumbLineHeight / 2.0f
             val thumbPath = Path().apply {
                 moveTo(startX, startY)
                 lineTo(startX, startY + thumbLineHeight)
@@ -150,10 +263,7 @@ class VerticalSeekbar : View {
                 arcTo(rectFBootom, 0f, 180f)
                 lineTo(centerX - thumbRadius, startY)
                 val rectFTop = RectF(
-                    centerX - thumbRadius,
-                    startY - thumbRadius,
-                    startX,
-                    startY + thumbRadius
+                    centerX - thumbRadius, startY - thumbRadius, startX, startY + thumbRadius
                 )
                 arcTo(rectFTop, 180f, 180f)
             }
@@ -162,32 +272,48 @@ class VerticalSeekbar : View {
     }
 
     private fun drawProgress(canvas: Canvas) {
-        val label = if (progress == 0f) "0" else progress.toString()
+        paint?.apply {
+            style = Paint.Style.FILL_AND_STROKE
+            strokeWidth = trackWidth
+            color = indicatorColor
+            strokeCap = Paint.Cap.BUTT
+        }?.let {
+            val startX = centerX
+            val startY = centerY
+            val stopX = centerX
+            val stopY = getProgressY()
+            canvas.drawLine(
+                startX, startY, stopX, stopY, it
+            )
+        }
+
+    }
+
+    private fun getProgressY(): Float {
+        return (maxProgress - progress) * (trackStopY - defaultPadding - thumbRadius) / (maxProgress - minProgress) + defaultPadding + thumbRadius
+    }
+
+    private fun calculateProgressByPx(y: Float): Float {
+        return maxProgress - (y - defaultPadding - thumbRadius) * (maxProgress - minProgress) / (trackStopY - defaultPadding - thumbRadius)
+    }
+
+    private fun drawProgressLabel(canvas: Canvas) {
+        val label = if (progress == 0f) "0" else BigDecimal(progress.toString()).setScale(
+            1, BigDecimal.ROUND_HALF_DOWN
+        ).toString()
 
         val labelWidth = labelPaint?.measureText(label) ?: 0f
         val baseLine = labelPaint?.fontMetrics?.let {
             (it.bottom - it.top) / 2.0f - it.bottom
         } ?: 0f
 
-        val baseLineY = baseLine + centerY
+        val baseLineY = baseLine + getProgressY()
 
-        Log.d("VerticalSeekbar", "drawProgress..baseLineY:$baseLineY..labelWidth:$labelWidth")
         labelPaint?.apply {
             textSize = labelSize
             color = labelColor
         }?.let {
             canvas.drawText(label, centerX - labelWidth / 2.0f, baseLineY, it)
-        }
-
-    }
-
-    private fun drawBaseLine(canvas: Canvas) {
-        paint?.apply {
-            color = Color.RED
-            style = Paint.Style.STROKE
-            strokeWidth = 0.5f
-        }?.let {
-            canvas.drawLine(centerX, 0f, centerX, viewHeight.toFloat(), it)
         }
     }
 
@@ -201,24 +327,23 @@ class VerticalSeekbar : View {
             strokeCap = Paint.Cap.ROUND
         }?.let {
             canvas.drawLine(
-                centerX,
-                trackStartY,
-                centerX,
-                trackStopY,
-                it
+                centerX, trackStartY, centerX, trackStopY, it
             )
         }
     }
 
     private fun measureWidth(widthMeasureSpec: Int): Int {
-        val specMode = MeasureSpec.getMode(widthMeasureSpec)
         return MeasureSpec.getSize(widthMeasureSpec)
     }
 
     private fun measureHeight(heightMeasureSpec: Int): Int {
-        val specMode = MeasureSpec.getMode(heightMeasureSpec)
         return MeasureSpec.getSize(heightMeasureSpec)
     }
 
 
+}
+
+interface OnSeekbarChangedListener {
+
+    fun onSeekbarChanged(progress: Float)
 }

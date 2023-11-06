@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="VerticalSeekbar">
+        <!--track-->
+        <attr name="trackColor" format="reference|color" />
+        <attr name="trackWidth" format="dimension" />
+        <!--thumb-->
+        <attr name="thumbColor" format="reference|color" />
+        <attr name="thumbRadius" format="dimension" />
+        <!--indicator-->
+        <attr name="indicatorColor" format="reference|color" />
+        <!--progress-->
+        <attr name="maxProgress" format="float" />
+        <attr name="progress" format="float" />
+        <!--label-->
+        <attr name="labelColor" format="reference|color" />
+        <attr name="labelSize" format="dimension" />
+
+    </declare-styleable>
+</resources>

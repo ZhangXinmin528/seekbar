@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="thumbRadius">25sp</dimen>
+    <dimen name="trackWidth">16dp</dimen>
+    <dimen name="labelSize">18sp</dimen>
+</resources>

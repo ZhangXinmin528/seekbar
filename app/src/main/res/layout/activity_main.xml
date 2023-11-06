@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,30 +8,19 @@
     android:background="@android:color/darker_gray"
     android:orientation="vertical">
 
-
-    <com.nextos.seekbar.SeekBarView
-        android:id="@+id/seekbar_view"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginTop="30dp"
-        android:background="@color/cardview_dark_background"
-        app:S_backColor="#FFFFFF"
-        app:S_backFrameColor="#C9C6C6"
-        app:S_backFrameSize="1dp"
-        app:S_backHeight="6dp"
-        app:S_maxProgress="100"
-        app:S_minProgress="0"
-        app:S_progress="0"
-        app:S_progressColor="#FCB2A7"
-        app:S_thumbColor="#F96650"
-        app:S_thumbNormalRadius="12dp"
-        app:S_thumbPressRadius="15dp" />
-
     <com.nextos.seekbar.VerticalSeekbar
         android:id="@+id/v_seekbar"
         android:layout_width="100dp"
-        android:layout_height="500dp"
+        android:layout_height="match_parent"
         android:background="#edeef9"
-        android:layout_marginTop="20dp" />
+        app:indicatorColor="#00ffff"
+        app:labelColor="#000000"
+        app:labelSize="@dimen/labelSize"
+        app:maxProgress="20"
+        app:progress="2"
+        app:thumbColor="#ffffff"
+        app:thumbRadius="@dimen/thumbRadius"
+        app:trackColor="#4F504F"
+        app:trackWidth="@dimen/trackWidth" />
 
 </LinearLayout>
